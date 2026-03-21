@@ -1,0 +1,28 @@
+name: Compile ESPHome
+
+on:
+  push:
+    paths:
+      - '**.yaml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Compile ESPHome YAML
+        uses: esphome/build-action@v6
+        with:
+          yaml-file: your-config.yaml
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: |
+            **/*.bin
+            **/manifest.json
