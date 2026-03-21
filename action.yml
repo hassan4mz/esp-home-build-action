@@ -1,98 +1,88 @@
-esphome:
-  name: "bedroom"
-  friendly_name: "bedroom"
-  name_add_mac_suffix: false
+name: ESPHome Builder
+description: Builds ESPHome binaries
 
-esp8266:
-  board: esp01_1m
+inputs:
+  yaml-file:
+    description: YAML file to use
+    required: true
+  version:
+    description: Version of ESPHome to build
+    required: false
+    default: latest
+  platform:
+    description: Platform (OS/Arch) to use
+    required: false
+    default: linux/amd64
+    deprecationMessage: |
+      The platform input is no longer used. ESPHome and this action supports
+      amd64 and arm64, both are supported by GitHub as the job runner architecture
+      by altering `runs-on` in the workflow.
+  release-summary:
+    description: Release summary
+    required: false
+    default: ""
+  release-url:
+    description: Release URL
+    required: false
+    default: ""
+  complete-manifest:
+    description: Output complete esp-web-tools manifest.json
+    required: false
+    default: false
 
-# Enable logging
-logger:
+outputs:
+  name:
+    description: Name of device extracted from configuration with the platform appended
+    value: ${{ steps.build-step.outputs.name }}
+  version:
+    description: ESPHome version
+    value: ${{ steps.build-step.outputs.esphome-version }}
+  original-name:
+    description: Original name of device extracted from configuration
+    value: ${{ steps.build-step.outputs.original-name }}
+  project-name:
+    description: Project name extracted from configuration
+    value: ${{ steps.build-step.outputs.project-name }}
+  project-version:
+    description: Project version extracted from configuration
+    value: ${{ steps.build-step.outputs.project-version }}
 
-ota:
-  platform: esphome
-  password: "137a9681430e6e46d61d746ba9008b20"
-  
-# Enable Home Assistant API
-api:
-  
-web_server:
-  port: 80
+runs:
+  using: composite
+  steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+    - name: Build ESPHome image
+      uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
+      env:
+        DOCKER_BUILD_SUMMARY: false
+        DOCKER_BUILD_RECORD_UPLOAD: false
+      with:
+        context: ${{ github.action_path }}
+        load: true
+        tags: esphome:${{ inputs.version }}
+        build-args: VERSION=${{ inputs.version }}
+    - name: Run container
+      shell: bash
+      id: build-step
+      run: |-
+        summary=$(cat <<'ENDOFSUMMARY'
+        ${{ inputs.release-summary }}
+        ENDOFSUMMARY
+        )
 
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
+        docker run --rm \
+          --workdir /github/workspace \
+          -v "$(pwd)":"/github/workspace" -v "$HOME:$HOME" \
+          --user $(id -u):$(id -g) \
+          -e HOME \
+          esphome:${{ inputs.version }} \
+            ${{ inputs.yaml-file }} \
+            --release-summary "$summary" \
+            --release-url "${{ inputs.release-url }}" \
+            --outputs-file "$GITHUB_OUTPUT" \
+            ${{ inputs.complete-manifest == 'true' && '--complete-manifest' || '--partial-manifest' }}
 
-binary_sensor:
-  - platform: gpio
-    pin:
-      number: GPIO0
-      mode:
-        input: true
-        pullup: true
-      inverted: true
-    id: button_1
-    on_press:
-      then:
-        - light.toggle: light_1
-
-  - platform: gpio
-    pin:
-      number: GPIO9
-      mode:
-        input: true
-        pullup: true
-      inverted: true
-    id: button_2
-    on_press:
-      then:
-        - light.toggle: light_2
-
-  - platform: gpio
-    pin:
-      number: GPIO10
-      mode:
-        input: true
-        pullup: true
-      inverted: true
-    id: button_3
-    on_press:
-      then:
-        - light.toggle: light_3
-
-  - platform: status
-    name: "T3 Status"
-
-output:
-  - platform: gpio
-    pin: GPIO12
-    id: relay_1
-
-  - platform: gpio
-    pin: GPIO5
-    id: relay_2
-
-  - platform: gpio
-    pin: GPIO4
-    id: relay_3
-
-light:
-  - platform: binary
-    name: "T3 L1"
-    id: light_1
-    output: relay_1
-
-  - platform: binary
-    name: "T3 L2"
-    id: light_2
-    output: relay_2
-
-  - platform: binary
-    name: "T3 L3"
-    id: light_3
-    output: relay_3
-
-status_led:
-  pin:
-    number: GPIO13
-    inverted: yes
+branding:
+  icon: "archive"
+  color: "white"
