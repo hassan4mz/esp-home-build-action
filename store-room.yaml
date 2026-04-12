@@ -1,0 +1,92 @@
+esphome:
+  name: "store-room"
+  friendly_name: "store-room"
+  name_add_mac_suffix: false
+esp8266:
+  board: esp01_1m
+
+
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  platform: esphome
+  password: "1eb1b6f75f63b1ec9151770c1ba7b089"
+web_server:
+  port: 80
+  
+mqtt:
+  broker: 192.168.10.1
+  username: hassan
+  password: 121212
+  discovery: true
+  discovery_prefix: homeassistant
+  birth_message:
+    topic: sonoff_4ch_pro/status
+    payload: online
+  will_message:
+    topic: sonoff_4ch_pro/status
+    payload: offline
+
+wifi:
+  ssid: "HFA"
+  password: "@hfa@123"
+  fast_connect: "true"
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Small-Toilet Fallback Hotspot"
+    password: "123123321"
+
+captive_portal:
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: true
+    id: button_1
+    on_press:
+      then:
+        - light.toggle: light_1
+
+  - platform: gpio
+    pin:
+      number: GPIO9
+      mode: INPUT_PULLUP
+      inverted: true
+    id: button_2
+    on_press:
+      then:
+        - light.toggle: light_2
+
+  - platform: status
+    name: "store room Status"
+
+output:
+  - platform: gpio
+    pin: GPIO12
+    id: relay_1
+
+  - platform: gpio
+    pin: GPIO5
+    id: relay_2
+
+light:
+  - platform: binary
+    name: "store"
+    id: light_1
+    output: relay_1
+
+  - platform: binary
+    name: "store-room"
+    id: light_2
+    output: relay_2
+
+status_led:
+  pin:
+    number: GPIO13
+    inverted: yes
