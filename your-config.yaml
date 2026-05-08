@@ -64,7 +64,7 @@ binary_sensor:
         - light.toggle: light_2
 
   - platform: status
-    name: "store room Status"
+    name: "ag-bedroom Status"
 
 output:
   - platform: gpio
@@ -82,7 +82,7 @@ light:
     output: relay_1
 
   - platform: binary
-    name: "store-room"
+    name: "ag-bedroom"
     id: light_2
     output: relay_2
 
