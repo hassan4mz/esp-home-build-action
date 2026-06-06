@@ -1,6 +1,6 @@
 esphome:
-  name: "ag-bedroom"
-  friendly_name: "ag-bedroom"
+  name: "Store-room"
+  friendly_name: "Store-room"
   name_add_mac_suffix: false
 esp8266:
   board: esp01_1m
@@ -26,7 +26,7 @@ wifi:
   fast_connect: "true"
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "ag-bedroom Fallback Hotspot"
+    ssid: "Store-room Fallback Hotspot"
     password: "123123321"
 
 captive_portal:
@@ -52,7 +52,7 @@ binary_sensor:
         - light.toggle: light_2
 
   - platform: status
-    name: "ag-bedroom Status"
+    name: "Store-room Status"
 
 output:
   - platform: gpio
@@ -70,7 +70,7 @@ light:
     output: relay_1
 
   - platform: binary
-    name: "ag-bedroom"
+    name: "Store-room"
     id: light_2
     output: relay_2
 
