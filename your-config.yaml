@@ -1,80 +1,62 @@
 esphome:
-  name: "ag-bedroom"
-  friendly_name: "ag-bedroom"
-  name_add_mac_suffix: false
-esp8266:
-  board: esp01_1m
+  name: esp32-cam
+  friendly_name: "ESP32 Camera"
 
+esp32:
+  board: esp32cam
+  framework:
+    type: arduino
 
+# إعدادات الـ PSRAM مهمة جداً لرفع الدقة ومنع إعادة التشغيل العشوائي
+psram:
 
-# Enable logging
 logger:
 
-# Enable Home Assistant API
 api:
 
 ota:
   platform: esphome
-  password: "1eb1b6f75f63b1ec9151770c1ba7b089"
-web_server:
-  port: 80
-
 
 wifi:
-  ssid: "HFA"
-  password: "@hfa@123"
-  fast_connect: "true"
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "ag-bedroom Fallback Hotspot"
-    password: "123123321"
+  ssid: "HAH-M"
+  password: "HAHDATA2029"
+  fast_connect: true
 
-captive_portal:
-binary_sensor:
-  - platform: gpio
-    pin:
-      number: GPIO0
-      mode: INPUT_PULLUP
-      inverted: true
-    id: button_1
-    on_press:
-      then:
-        - light.toggle: light_1
+# تعريف الكاميرا بالـ Pinout القياسي لموديل AI-Thinker
+esp32_camera:
+  name: "My Camera"
+  external_clock:
+    pin: GPIO0
+    frequency: 20MHz
+  i2c_pins:
+    sda: GPIO26
+    scl: GPIO27
+  data_pins: [GPIO5, GPIO18, GPIO19, GPIO21, GPIO36, GPIO39, GPIO34, GPIO35]
+  vsync_pin: GPIO25
+  href_pin: GPIO23
+  pixel_clock_pin: GPIO22
+  power_down_pin: GPIO32
 
-  - platform: gpio
-    pin:
-      number: GPIO9
-      mode: INPUT_PULLUP
-      inverted: true
-    id: button_2
-    on_press:
-      then:
-        - light.toggle: light_2
+  # جودة ودقة الصورة
+  resolution: 800x600        # خيارات شائعة: 640x480 (VGA), 800x600 (SVGA), 1024x768 (XGA)
+  jpeg_quality: 10          # القيمة من 10 إلى 63 (كلما قل الرقم زادت الجودة)
+  max_framerate: 10.0 fps
+  idle_framerate: 0.1 fps   # معدل التحديث عند عدم فتح البث في HA لتوفير الطاقة والحرارة
+  vertical_flip: false
+  horizontal_mirror: false
 
-  - platform: status
-    name: "ag-bedroom Status"
+# سيرفر محلي للبث المباشر (اختياري للربط مع NVR أو متصفح خارجي)
+esp32_camera_web_server:
+  - port: 8080
+    mode: stream
 
+# تفعيل كشاف الفلاش المدمج (Flashlight LED على GPIO4)
 output:
-  - platform: gpio
-    pin: GPIO12
-    id: relay_1
-
-  - platform: gpio
-    pin: GPIO5
-    id: relay_2
+  - platform: ledc
+    pin: GPIO4
+    id: gpio_flash
 
 light:
-  - platform: binary
-    name: "store"
-    id: light_1
-    output: relay_1
-
-  - platform: binary
-    name: "ag-bedroom"
-    id: light_2
-    output: relay_2
-
-status_led:
-  pin:
-    number: GPIO13
-    inverted: yes
+  - platform: monochromatic
+    output: gpio_flash
+    name: "Camera Flashlight"
