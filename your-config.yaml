@@ -41,7 +41,7 @@ esp32_camera:
   power_down_pin: GPIO32
 
   # جودة ودقة الصورة
-  resolution: 320×240        # خيارات شائعة: 640x480 (VGA), 800x600 (SVGA), 1024x768 (XGA)
+  resolution: 320x240        # خيارات شائعة: 640x480 (VGA), 800x600 (SVGA), 1024x768 (XGA)
   jpeg_quality: 10          # القيمة من 10 إلى 63 (كلما قل الرقم زادت الجودة)
   max_framerate: 10.0 fps
   idle_framerate: 0.1 fps   # معدل التحديث عند عدم فتح البث في HA لتوفير الطاقة والحرارة
