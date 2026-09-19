@@ -7,6 +7,9 @@ esp32:
   framework:
     type: arduino
 
+web_server:
+  port: 80
+
 # إعدادات الـ PSRAM مهمة جداً لرفع الدقة ومنع إعادة التشغيل العشوائي
 psram:
 
